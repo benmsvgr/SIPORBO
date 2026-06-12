@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PORPROV DATA</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div id="loginPage" class="login-page">
+    <div class="login-card">
+      <h1>PORPROV DATA</h1>
+      <p>Login Bidang</p>
+
+      <input type="text" id="username" placeholder="Username" />
+      <input type="password" id="password" placeholder="Password" />
+
+      <button onclick="login()">Login</button>
+
+      <div id="loginMsg" class="msg"></div>
+    </div>
+  </div>
+
+  <div id="appPage" class="app-page hidden">
+    <header>
+      <div>
+        <h2>PORPROV DATA</h2>
+        <p id="userInfo">-</p>
+      </div>
+      <button class="logout" onclick="logout()">Logout</button>
+    </header>
+
+    <section class="summary">
+      <div class="box">
+        <span>Pagu Bidang</span>
+        <b id="paguBidang">Rp0</b>
+      </div>
+      <div class="box">
+        <span>Total Input</span>
+        <b id="totalInput">Rp0</b>
+      </div>
+      <div class="box">
+        <span>Sisa Pagu</span>
+        <b id="sisaPagu">Rp0</b>
+      </div>
+      <div class="box">
+        <span>Status Akses</span>
+        <b id="statusAkses">-</b>
+      </div>
+    </section>
+
+    <section id="adminPanel" class="panel hidden">
+      <h3>Admin - Pagu & Akses Bidang</h3>
+      <div id="bidangList"></div>
+    </section>
+
+    <section class="panel">
+      <h3>Input Paket Kebutuhan</h3>
+
+      <div class="form-grid">
+        <select id="inputBidang" class="admin-only hidden"></select>
+        <input type="text" id="rincian" placeholder="Rincian kebutuhan" />
+        <input type="text" id="keterangan" placeholder="Keterangan" />
+        <input type="number" id="volume" placeholder="Volume" />
+        <input type="text" id="satuan" placeholder="Satuan" />
+        <input type="number" id="harga" placeholder="Harga satuan" />
+      </div>
+
+      <button onclick="savePaket()">Simpan Paket</button>
+      <div id="saveMsg" class="msg"></div>
+    </section>
+
+    <section class="panel">
+      <h3>Data Paket</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID Paket</th>
+              <th>Bidang</th>
+              <th>Rincian</th>
+              <th>Keterangan</th>
+              <th>Volume</th>
+              <th>Satuan</th>
+              <th>Harga</th>
+              <th>Jumlah</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="paketBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
