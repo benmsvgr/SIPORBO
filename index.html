@@ -3,24 +3,39 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SIPORBO</title>
+  <title>SIPORBO | Sistem Informasi PORPROV Bogor</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
+  <div class="background-effect">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
   <!-- LOGIN -->
   <div id="loginPage" class="login-page">
-    <div class="login-card">
+    <div class="login-card fade-up">
+      <div class="logo-circle">SP</div>
+
       <div class="brand">
         <h1>SIPORBO</h1>
         <p>Sistem Informasi PORPROV Bogor</p>
         <small>Pengelolaan pagu dan input kebutuhan per bidang</small>
       </div>
 
-      <input type="text" id="username" placeholder="Username" autocomplete="username" />
-      <input type="password" id="password" placeholder="Password" autocomplete="current-password" />
+      <div class="input-group">
+        <label>Username</label>
+        <input type="text" id="username" placeholder="Masukkan username" autocomplete="username" />
+      </div>
 
-      <button onclick="login()">Login</button>
+      <div class="input-group">
+        <label>Password</label>
+        <input type="password" id="password" placeholder="Masukkan password" autocomplete="current-password" />
+      </div>
+
+      <button id="loginBtn" onclick="login()">Login</button>
 
       <div id="loginMsg" class="msg"></div>
     </div>
@@ -29,68 +44,94 @@
   <!-- APP -->
   <div id="appPage" class="app-page hidden">
 
-    <header>
-      <div>
-        <h2>SIPORBO</h2>
-        <p>Sistem Informasi PORPROV Bogor</p>
-        <small id="userInfo">-</small>
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="logo-mini">SP</div>
+        <div>
+          <h2>SIPORBO</h2>
+          <p>Sistem Informasi PORPROV Bogor</p>
+          <small id="userInfo">-</small>
+        </div>
       </div>
-      <button class="logout" onclick="logout()">Logout</button>
+
+      <button class="btn-danger" onclick="logout()">Logout</button>
     </header>
 
     <!-- SUMMARY -->
     <section class="summary">
-      <div class="box">
+      <div class="box card-hover">
         <span>Pagu</span>
         <b id="paguBidang">Rp0</b>
       </div>
-      <div class="box">
+      <div class="box card-hover">
         <span>Total Input</span>
         <b id="totalInput">Rp0</b>
       </div>
-      <div class="box">
+      <div class="box card-hover">
         <span>Sisa Pagu</span>
         <b id="sisaPagu">Rp0</b>
       </div>
-      <div class="box">
+      <div class="box card-hover">
         <span>Status Akses</span>
         <b id="statusAkses">-</b>
       </div>
     </section>
 
     <!-- ADMIN PANEL -->
-    <section id="adminPanel" class="panel hidden">
+    <section id="adminPanel" class="panel hidden fade-up">
       <div class="panel-title">
         <h3>Admin - Pagu & Akses Bidang</h3>
-        <p>Admin bisa ubah pagu dan buka/tutup akses input masing-masing bidang.</p>
+        <p>Admin dapat mengatur pagu dan membuka/menutup akses input masing-masing bidang.</p>
       </div>
 
       <div id="bidangList"></div>
     </section>
 
     <!-- INPUT PAKET -->
-    <section class="panel">
+    <section class="panel fade-up">
       <div class="panel-title">
         <h3>Input Paket Kebutuhan</h3>
-        <p>Isi rincian kebutuhan sesuai bidang masing-masing.</p>
+        <p>Input rincian kebutuhan sesuai bidang masing-masing.</p>
       </div>
 
       <div class="form-grid">
-        <select id="inputBidang" class="admin-only hidden"></select>
+        <div class="input-group admin-only hidden">
+          <label>Pilih Bidang</label>
+          <select id="inputBidang"></select>
+        </div>
 
-        <input type="text" id="rincian" placeholder="Rincian kebutuhan" />
-        <input type="text" id="keterangan" placeholder="Keterangan" />
-        <input type="number" id="volume" placeholder="Volume" />
-        <input type="text" id="satuan" placeholder="Satuan" />
-        <input type="number" id="harga" placeholder="Harga satuan" />
+        <div class="input-group">
+          <label>Rincian Kebutuhan</label>
+          <input type="text" id="rincian" placeholder="Contoh: T-Shirt Panitia" />
+        </div>
+
+        <div class="input-group">
+          <label>Keterangan</label>
+          <input type="text" id="keterangan" placeholder="Opsional" />
+        </div>
+
+        <div class="input-group">
+          <label>Volume</label>
+          <input type="number" id="volume" placeholder="Contoh: 100" />
+        </div>
+
+        <div class="input-group">
+          <label>Satuan</label>
+          <input type="text" id="satuan" placeholder="Contoh: Buah / Paket / Orang" />
+        </div>
+
+        <div class="input-group">
+          <label>Harga Satuan</label>
+          <input type="number" id="harga" placeholder="Contoh: 125000" />
+        </div>
       </div>
 
-      <button onclick="savePaket()">Simpan Paket</button>
+      <button id="saveBtn" onclick="savePaket()">Simpan Paket</button>
       <div id="saveMsg" class="msg"></div>
     </section>
 
     <!-- DATA PAKET -->
-    <section class="panel">
+    <section class="panel fade-up">
       <div class="panel-title">
         <h3>Data Paket</h3>
         <p>Daftar paket kebutuhan yang sudah diinput.</p>
