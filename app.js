@@ -13,9 +13,33 @@ function rupiah(n){ return new Intl.NumberFormat("id-ID",{style:"currency",curre
 function toNumber(v){
   if(v === null || v === undefined || v === "") return 0;
   if(typeof v === "number") return isFinite(v) ? v : 0;
-  const cleaned = String(v).replace(/[^0-9,-]/g, "").replace(/,/g, ".");
-  const num = Number(cleaned);
+  let s = String(v).trim().replace(/[^0-9,.-]/g, "");
+  if(!s) return 0;
+  if((s.match(/\./g) || []).length > 1 && !s.includes(",")) s = s.replace(/\./g, "");
+  else if(s.includes(".") && s.includes(",")) s = s.replace(/\./g, "").replace(",", ".");
+  else if(s.includes(",") && !s.includes(".")) s = s.replace(",", ".");
+  else if(/^\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, "");
+  const num = Number(s);
   return isFinite(num) ? num : 0;
+}
+function angkaID(n){
+  return new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 }).format(toNumber(n));
+}
+function formatAngkaInput(el){
+  if(!el) return;
+  const raw = String(el.value || "").replace(/[^0-9]/g, "");
+  el.value = raw ? angkaID(raw) : "";
+}
+function setAutoTotal(volumeId="volume", hargaId="harga", totalId="totalPreview"){
+  const vol = toNumber(document.getElementById(volumeId)?.value);
+  const harga = toNumber(document.getElementById(hargaId)?.value);
+  const total = vol * harga;
+  const el = document.getElementById(totalId);
+  if(el) el.value = rupiah(total);
+}
+function onAngkaInput(el, volumeId="volume", hargaId="harga", totalId="totalPreview"){
+  formatAngkaInput(el);
+  setAutoTotal(volumeId, hargaId, totalId);
 }
 function esc(v){ return String(v ?? "").replace(/[&<>'"]/g, s => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;"}[s])); }
 function showLoading(text="Memproses..."){ document.getElementById("loadingText").innerText = text; document.getElementById("loadingOverlay").classList.remove("hidden"); }
@@ -129,11 +153,11 @@ function renderPerencanaan(){
   const data = dashboard.perencanaan.filter(k => k.id_kegiatan);
   let html = "";
   if(!isAdmin()){
-    html += `<section class="panel fade-up"><h3>Input Perencanaan</h3><p class="panel-sub">Input rencana kegiatan/kebutuhan. Setelah disimpan, status langsung DIAJUKAN ke admin.</p><div class="form-grid"><div class="field"><label>Nama Kegiatan</label><input id="namaKegiatan" placeholder="Contoh: Rapat Koordinasi"></div><div class="field"><label>Rincian Kebutuhan</label><input id="rincian" placeholder="Contoh: Konsumsi rapat"></div><div class="field"><label>Keterangan</label><input id="keterangan" placeholder="Opsional"></div><div class="field"><label>Volume</label><input id="volume" type="number" placeholder="Contoh: 100"></div><div class="field"><label>Satuan</label><input id="satuan" placeholder="Orang / Paket / Buah"></div><div class="field"><label>Harga Satuan</label><input id="harga" type="number" placeholder="Contoh: 50000"></div></div><button onclick="savePerencanaan()">Simpan & Ajukan</button><div id="saveMsg" class="msg"></div></section>`;
+    html += `<section class="panel fade-up"><h3>Input Perencanaan</h3><p class="panel-sub">Input rencana kegiatan/kebutuhan. Setelah disimpan, status langsung DIAJUKAN ke admin.</p><div class="form-grid"><div class="field"><label>Nama Kegiatan</label><input id="namaKegiatan" placeholder="Contoh: Rapat Koordinasi"></div><div class="field"><label>Rincian Kebutuhan</label><input id="rincian" placeholder="Contoh: Konsumsi rapat"></div><div class="field"><label>Keterangan</label><input id="keterangan" placeholder="Opsional"></div><div class="field"><label>Volume</label><input id="volume" inputmode="numeric" placeholder="Contoh: 2" oninput="onAngkaInput(this)"></div><div class="field"><label>Satuan</label><input id="satuan" placeholder="Orang / Paket / Buah"></div><div class="field"><label>Harga Satuan</label><input id="harga" inputmode="numeric" placeholder="Contoh: 500.000" oninput="onAngkaInput(this)"></div><div class="field"><label>Total Otomatis</label><input id="totalPreview" class="readonly-total" value="Rp0" readonly></div></div><button onclick="savePerencanaan()">Simpan & Ajukan</button><div id="saveMsg" class="msg"></div></section>`;
   } else {
     html += `<section class="panel fade-up"><h3>Persetujuan Perencanaan</h3><p class="panel-sub">Admin hanya menyetujui atau menolak inputan bidang. Admin tidak menginput kegiatan.</p></section>`;
   }
-  html += `<section class="panel fade-up"><h3>Data Perencanaan</h3><p class="panel-sub">${isAdmin()?"Daftar perencanaan semua bidang.":"Daftar rencana kegiatan bidang sendiri."}</p><div class="table-wrap"><table><thead><tr><th>ID</th><th>Bidang</th><th>Nama Kegiatan</th><th>Rincian</th><th>Volume</th><th>Satuan</th><th>Harga</th><th>Jumlah</th><th>Status</th><th>Aksi</th></tr></thead><tbody>${data.map(rowPerencanaan).join("") || `<tr><td colspan="10" class="empty">Belum ada data perencanaan</td></tr>`}</tbody></table></div></section>`;
+  html += `<section class="panel fade-up"><h3>Data Perencanaan</h3><p class="panel-sub">${isAdmin()?"Daftar perencanaan semua bidang.":"Daftar rencana kegiatan bidang sendiri."}</p><div class="table-wrap"><table><thead><tr><th>ID</th><th>Bidang</th><th>Nama Kegiatan</th><th>Rincian</th><th>Volume</th><th>Satuan</th><th>Harga</th><th>Jumlah</th><th>Status</th><th>Alasan/Catatan</th><th>Aksi</th></tr></thead><tbody>${data.map(rowPerencanaan).join("") || `<tr><td colspan="11" class="empty">Belum ada data perencanaan</td></tr>`}</tbody></table></div></section>`;
   document.getElementById("contentArea").innerHTML = html;
 }
 
@@ -141,6 +165,9 @@ function rowPerencanaan(p){
   const status = String(p.status_perencanaan || "DIAJUKAN").toUpperCase();
   const jumlah = toNumber(p.jumlah) || (toNumber(p.volume) * toNumber(p.harga_satuan));
   let aksi = "-";
+  const alasanTolak = p.alasan_penolakan ? `<div><b>Penolakan:</b> ${esc(p.alasan_penolakan)}</div>` : "";
+  const alasanUbah = p.alasan_perubahan ? `<div><b>Perubahan:</b> ${esc(p.alasan_perubahan)}</div>` : "";
+  const catatan = alasanTolak || alasanUbah ? `<div class="note-cell">${alasanTolak}${alasanUbah}</div>` : "-";
   if(isAdmin()){
     if(["DIAJUKAN","PERUBAHAN_DIAJUKAN"].includes(status)) aksi = `<button class="btn-mini btn-green" onclick="approvePerencanaan('${esc(p.id_kegiatan)}')">Setujui</button><button class="btn-mini btn-orange" onclick="rejectPerencanaan('${esc(p.id_kegiatan)}')">Tolak</button>`;
   } else {
@@ -148,7 +175,7 @@ function rowPerencanaan(p){
     if(status === "DISETUJUI") aksi = `<button class="btn-mini btn-orange" onclick="openEditModal('${esc(p.id_kegiatan)}','change')">Ajukan Perubahan</button>`;
     if(status === "PERUBAHAN_DIAJUKAN") aksi = `<span class="muted">Menunggu persetujuan perubahan</span>`;
   }
-  return `<tr><td>${esc(p.id_kegiatan)}</td><td>${esc(bidangName(p.id_bidang))}</td><td>${esc(p.nama_kegiatan)}</td><td>${esc(p.rincian_kebutuhan)}</td><td>${esc(p.volume)}</td><td>${esc(p.satuan)}</td><td>${rupiah(p.harga_satuan)}</td><td><b>${rupiah(jumlah)}</b></td><td>${badge(status)}</td><td>${aksi}</td></tr>`;
+  return `<tr><td>${esc(p.id_kegiatan)}</td><td>${esc(bidangName(p.id_bidang))}</td><td>${esc(p.nama_kegiatan)}</td><td>${esc(p.rincian_kebutuhan)}</td><td>${esc(p.volume)}</td><td>${esc(p.satuan)}</td><td>${rupiah(p.harga_satuan)}</td><td><b>${rupiah(jumlah)}</b></td><td>${badge(status)}</td><td>${catatan}</td><td>${aksi}</td></tr>`;
 }
 
 function renderPencairan(){
@@ -186,7 +213,7 @@ async function savePerencanaan(){
   const data = {nama_kegiatan:v("namaKegiatan"), rincian_kebutuhan:v("rincian"), keterangan:v("keterangan"), volume:v("volume"), satuan:v("satuan"), harga_satuan:v("harga")};
   if(!data.nama_kegiatan || !data.rincian_kebutuhan || !data.volume || !data.harga_satuan){ document.getElementById("saveMsg").innerText = "Nama kegiatan, rincian, volume, dan harga wajib diisi."; return; }
   showLoading("Menyimpan & mengajukan...");
-  try{ const r = await apiPost({action:"savePerencanaan", user:currentUser, data}); if(!r.success){ alert(r.message); return; } clearForm(["namaKegiatan","rincian","keterangan","volume","satuan","harga"]); await loadDashboard(); }
+  try{ const r = await apiPost({action:"savePerencanaan", user:currentUser, data}); if(!r.success){ alert(r.message); return; } clearForm(["namaKegiatan","rincian","keterangan","volume","satuan","harga","totalPreview"]); const tp=document.getElementById("totalPreview"); if(tp) tp.value="Rp0"; await loadDashboard(); }
   catch(e){ alert("Gagal simpan perencanaan"); console.error(e); } finally{ hideLoading(); }
 }
 function v(id){ return document.getElementById(id)?.value?.trim() || ""; }
@@ -201,21 +228,34 @@ function openEditModal(id, mode){
   document.getElementById("editNamaKegiatan").value = p.nama_kegiatan || "";
   document.getElementById("editRincian").value = p.rincian_kebutuhan || "";
   document.getElementById("editKeterangan").value = p.keterangan || "";
-  document.getElementById("editVolume").value = p.volume || "";
+  document.getElementById("editVolume").value = p.volume ? angkaID(p.volume) : "";
   document.getElementById("editSatuan").value = p.satuan || "";
-  document.getElementById("editHarga").value = p.harga_satuan || "";
+  document.getElementById("editHarga").value = p.harga_satuan ? angkaID(p.harga_satuan) : "";
+  const alasanWrap = document.getElementById("editAlasanWrap");
+  const alasanInput = document.getElementById("editAlasanPerubahan");
+  if(alasanWrap && alasanInput){
+    alasanWrap.classList.toggle("hidden", mode !== "change");
+    alasanInput.value = mode === "change" ? (p.alasan_perubahan || "") : "";
+  }
+  setAutoTotal("editVolume", "editHarga", "editTotalPreview");
   document.getElementById("editModal").classList.remove("hidden");
 }
 function closeEditModal(){ document.getElementById("editModal").classList.add("hidden"); }
 async function submitEditPerencanaan(){
-  const data = { id_kegiatan:v("editIdKegiatan"), nama_kegiatan:v("editNamaKegiatan"), rincian_kebutuhan:v("editRincian"), keterangan:v("editKeterangan"), volume:v("editVolume"), satuan:v("editSatuan"), harga_satuan:v("editHarga"), mode:editMode };
+  const data = { id_kegiatan:v("editIdKegiatan"), nama_kegiatan:v("editNamaKegiatan"), rincian_kebutuhan:v("editRincian"), keterangan:v("editKeterangan"), volume:v("editVolume"), satuan:v("editSatuan"), harga_satuan:v("editHarga"), mode:editMode, alasan_perubahan:v("editAlasanPerubahan") };
+  if(editMode === "change" && !data.alasan_perubahan){ alert("Alasan perubahan wajib diisi."); return; }
   showLoading(editMode === "change" ? "Mengajukan perubahan..." : "Menyimpan perubahan...");
   try{ const r = await apiPost({action:"updatePerencanaan", user:currentUser, data}); if(!r.success){ alert(r.message); return; } closeEditModal(); await loadDashboard(); }
   catch(e){ alert("Gagal update perencanaan"); console.error(e); } finally{ hideLoading(); }
 }
 async function deletePerencanaan(id){ if(!confirm("Hapus perencanaan ini?")) return; showLoading("Menghapus..."); try{ const r=await apiPost({action:"deletePerencanaan", user:currentUser, id_kegiatan:id}); if(!r.success) alert(r.message); await loadDashboard(); }catch(e){ alert("Gagal hapus"); }finally{ hideLoading(); } }
 async function approvePerencanaan(id){ showLoading("Menyetujui..."); try{ const r=await apiPost({action:"approvePerencanaan", user:currentUser, id_kegiatan:id}); if(!r.success) alert(r.message); await loadDashboard(); }catch(e){ alert("Gagal setujui"); }finally{ hideLoading(); } }
-async function rejectPerencanaan(id){ const note=prompt("Catatan penolakan (opsional):") || ""; showLoading("Menolak..."); try{ const r=await apiPost({action:"rejectPerencanaan", user:currentUser, id_kegiatan:id, catatan:note}); if(!r.success) alert(r.message); await loadDashboard(); }catch(e){ alert("Gagal tolak"); }finally{ hideLoading(); } }
+async function rejectPerencanaan(id){
+  const note = prompt("Alasan penolakan (wajib diisi):") || "";
+  if(!note.trim()){ alert("Alasan penolakan wajib diisi."); return; }
+  showLoading("Menolak...");
+  try{ const r=await apiPost({action:"rejectPerencanaan", user:currentUser, id_kegiatan:id, catatan:note}); if(!r.success) alert(r.message); await loadDashboard(); }catch(e){ alert("Gagal tolak"); }finally{ hideLoading(); }
+}
 
 async function uploadDokumen(){
   const id_kegiatan = v("uploadKegiatan"); const jenis = v("jenisDokumen"); const file = document.getElementById("fileDokumen")?.files?.[0];
