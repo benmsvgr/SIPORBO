@@ -191,9 +191,13 @@ function renderPencairan(){
   document.getElementById("contentArea").innerHTML = html;
 }
 function renderDokumenRow(d){
+  const st = String(d.status_verifikasi || 'MENUNGGU').toUpperCase();
   let aksi = `<span class="muted">-</span>`;
   if(isAdmin()){
-    aksi = `<input class="admin-note-input" id="cat_${esc(d.id_dokumen)}" placeholder="Catatan admin"><br><button class="btn-mini btn-green" onclick="verifDok('${esc(d.id_dokumen)}','VALID')">Valid</button><button class="btn-mini btn-orange" onclick="verifDok('${esc(d.id_dokumen)}','PERBAIKAN')">Perbaikan</button><button class="btn-mini btn-red" onclick="verifDok('${esc(d.id_dokumen)}','DITOLAK')">Tolak</button><button class="btn-mini" onclick="updateCair('${esc(d.id_kegiatan)}','SIAP DICAIRKAN')">Siap Cair</button><button class="btn-mini btn-green" onclick="updateCair('${esc(d.id_kegiatan)}','SUDAH DICAIRKAN')">Sudah Cair</button>`;
+    aksi = `<button class="btn-mini btn-green" onclick="verifDok('${esc(d.id_dokumen)}','VALID')">Valid</button>` +
+           `<button class="btn-mini btn-orange" onclick="mintaPerbaikanDok('${esc(d.id_dokumen)}')">Perbaikan</button>`;
+  } else if(st === 'PERBAIKAN' || st === 'DITOLAK'){
+    aksi = `<div class="revision-box"><input type="file" id="revisi_${esc(d.id_dokumen)}"><button class="btn-mini" onclick="revisiDokumen('${esc(d.id_dokumen)}')">Upload Revisi</button></div>`;
   }
   return `<tr><td>${esc(bidangName(d.id_bidang))}</td><td>${esc(kegiatanName(d.id_kegiatan))}</td><td>${esc(d.jenis_dokumen)}</td><td>${d.url_file?`<a href="${esc(d.url_file)}" target="_blank">${esc(d.nama_file||'Buka file')}</a>`:esc(d.nama_file)}</td><td>${badge(d.status_verifikasi || 'MENUNGGU')}</td><td>${badge(getPencairanStatus(d.id_kegiatan))}</td><td class="note-cell">${esc(d.catatan_admin||'-')}</td><td>${aksi}</td></tr>`;
 }
@@ -252,7 +256,39 @@ async function uploadDokumen(){
   }catch(e){ alert(e.message || "Gagal upload dokumen."); }
   finally{ hideLoading(); }
 }
-async function verifDok(id, status){ const cat = document.getElementById(`cat_${id}`)?.value || ""; showLoading("Verifikasi dokumen..."); try{ const r=await apiPost({action:"verifyDokumen", user:currentUser, id_dokumen:id, status_verifikasi:status, catatan_admin:cat}); alert(r.message); if(r.success) await loadDashboard(false); }catch(e){alert(e.message)}finally{hideLoading();} }
-async function updateCair(id, status){ const cat = prompt("Catatan status pencairan (opsional):") || ""; showLoading("Update pencairan..."); try{ const r=await apiPost({action:"updateStatusPencairan", user:currentUser, id_kegiatan:id, status_pencairan:status, catatan_admin:cat}); alert(r.message); if(r.success) await loadDashboard(false); }catch(e){alert(e.message)}finally{hideLoading();} }
+async function verifDok(id, status){
+  showLoading("Verifikasi dokumen...");
+  try{
+    const r=await apiPost({action:"verifyDokumen", user:currentUser, id_dokumen:id, status_verifikasi:status, catatan_admin:""});
+    alert(r.message); if(r.success) await loadDashboard(false);
+  }catch(e){alert(e.message)}finally{hideLoading();}
+}
+async function mintaPerbaikanDok(id){
+  const catatan = prompt("Alasan perbaikan dokumen wajib diisi:");
+  if(!catatan) return;
+  showLoading("Mengirim status perbaikan...");
+  try{
+    const r=await apiPost({action:"verifyDokumen", user:currentUser, id_dokumen:id, status_verifikasi:"PERBAIKAN", catatan_admin:catatan});
+    alert(r.message); if(r.success) await loadDashboard(false);
+  }catch(e){alert(e.message)}finally{hideLoading();}
+}
+async function revisiDokumen(idDokumen){
+  const input = document.getElementById(`revisi_${idDokumen}`);
+  const file = input?.files?.[0];
+  if(!file){ alert("Pilih file revisi dulu."); return; }
+  showLoading("Upload revisi dokumen...");
+  try{
+    const base64 = await fileToBase64(file);
+    const r = await apiPost({action:"revisiDokumen", user:currentUser, id_dokumen:idDokumen, file_name:file.name, mime_type:file.type, file_base64:base64});
+    alert(r.message); if(r.success) await loadDashboard(false);
+  }catch(e){ alert(e.message || "Gagal upload revisi dokumen."); }
+  finally{ hideLoading(); }
+}
+async function updateCair(id, status){
+  // fungsi lama dibiarkan untuk kompatibilitas, tapi tombolnya sudah tidak ditampilkan
+  const cat = prompt("Catatan status pencairan (opsional):") || "";
+  showLoading("Update pencairan...");
+  try{ const r=await apiPost({action:"updateStatusPencairan", user:currentUser, id_kegiatan:id, status_pencairan:status, catatan_admin:cat}); alert(r.message); if(r.success) await loadDashboard(false); }catch(e){alert(e.message)}finally{hideLoading();}
+}
 function logout(){ localStorage.removeItem("siporbo_user"); currentUser=null; dashboard=null; document.getElementById("appPage").classList.add("hidden"); document.getElementById("loginPage").classList.remove("hidden"); }
 window.onload = async function(){ const saved = localStorage.getItem("siporbo_user"); if(saved){ currentUser=JSON.parse(saved); activeMenu=isAdmin()?"Dashboard Monitoring":"Struktur Anggaran"; document.getElementById("loginPage").classList.add("hidden"); document.getElementById("appPage").classList.remove("hidden"); await loadDashboard(true); } };
