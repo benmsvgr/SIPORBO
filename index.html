@@ -46,13 +46,14 @@
           <small id="userInfo">-</small>
         </div>
       </div>
-      <button class="btn-danger" onclick="logout()">Logout</button>
+      <div class="topbar-actions">
+        <button class="btn-refresh" onclick="refreshData()">Refresh</button>
+        <button class="btn-danger" onclick="logout()">Logout</button>
+      </div>
     </header>
 
     <nav id="menuNav" class="menu-nav"></nav>
-
     <section id="summaryCards" class="summary-grid"></section>
-
     <section id="contentArea" class="content-area"></section>
   </main>
 
@@ -66,6 +67,7 @@
         <button class="btn-soft" onclick="closeEditModal()">Tutup</button>
       </div>
       <input type="hidden" id="editIdKegiatan" />
+      <input type="hidden" id="editMode" />
       <div class="form-grid">
         <div class="field"><label>Nama Kegiatan</label><input id="editNamaKegiatan" /></div>
         <div class="field"><label>Rincian Kebutuhan</label><input id="editRincian" /></div>
@@ -74,7 +76,7 @@
         <div class="field"><label>Satuan</label><input id="editSatuan" /></div>
         <div class="field"><label>Harga Satuan</label><input id="editHarga" inputmode="numeric" oninput="onAngkaInput(this, 'editVolume', 'editHarga', 'editTotalPreview')" /></div>
         <div class="field"><label>Total Otomatis</label><input id="editTotalPreview" class="readonly-total" value="Rp0" readonly /></div>
-        <div id="editAlasanWrap" class="field full hidden"><label>Alasan Perubahan</label><textarea id="editAlasanPerubahan" rows="3" placeholder="Jelaskan alasan perubahan perencanaan ini"></textarea></div>
+        <div id="alasanPerubahanWrap" class="field full hidden"><label>Alasan Perubahan</label><textarea id="editAlasanPerubahan" rows="3" placeholder="Jelaskan alasan perubahan agar bisa dilihat admin"></textarea></div>
       </div>
       <button onclick="submitEditPerencanaan()">Simpan & Ajukan</button>
     </div>
