@@ -7,34 +7,36 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="background-effect">
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-    <div class="orb orb-3"></div>
+  <div class="bg-orb orb-a"></div>
+  <div class="bg-orb orb-b"></div>
+
+  <div id="loadingOverlay" class="loading-overlay hidden">
+    <div class="loader-card">
+      <div class="spinner"></div>
+      <b id="loadingText">Memproses...</b>
+      <small>Mohon tunggu sebentar</small>
+    </div>
   </div>
 
   <div id="loginPage" class="login-page">
     <div class="login-card fade-up">
-      <div class="logo-circle">SP</div>
-      <div class="brand">
-        <h1>SIPORBO</h1>
-        <p>Sistem Informasi PORPROV Bogor</p>
-        <small>Pengelolaan struktur anggaran, perencanaan, dan pencairan per bidang.</small>
-      </div>
-      <div class="input-group">
-        <label>Username</label>
-        <input type="text" id="username" placeholder="Masukkan username" autocomplete="username" />
-      </div>
-      <div class="input-group">
-        <label>Password</label>
-        <input type="password" id="password" placeholder="Masukkan password" autocomplete="current-password" />
-      </div>
+      <div class="logo-box">SP</div>
+      <h1>SIPORBO</h1>
+      <p>Sistem Informasi PORPROV Bogor</p>
+      <small>Struktur anggaran, perencanaan, dan pencairan per bidang</small>
+
+      <label>Username</label>
+      <input id="username" type="text" placeholder="Masukkan username" autocomplete="username" />
+
+      <label>Password</label>
+      <input id="password" type="password" placeholder="Masukkan password" autocomplete="current-password" />
+
       <button id="loginBtn" onclick="login()">Login</button>
       <div id="loginMsg" class="msg"></div>
     </div>
   </div>
 
-  <div id="appPage" class="app-page hidden">
+  <main id="appPage" class="app-page hidden">
     <header class="topbar">
       <div class="topbar-left">
         <div class="logo-mini">SP</div>
@@ -47,157 +49,33 @@
       <button class="btn-danger" onclick="logout()">Logout</button>
     </header>
 
-    <nav class="nav-tabs">
-      <button id="tabMonitoring" class="nav-btn admin-only hidden" onclick="showMenu('monitoring')">Dashboard Monitoring</button>
-      <button id="tabAnggaran" class="nav-btn active" onclick="showMenu('anggaran')">Struktur Anggaran</button>
-      <button id="tabPerencanaan" class="nav-btn" onclick="showMenu('perencanaan')">Perencanaan</button>
-      <button id="tabPencairan" class="nav-btn" onclick="showMenu('pencairan')">Pencairan</button>
-    </nav>
+    <nav id="menuNav" class="menu-nav"></nav>
 
-    <main>
-      <section id="pageMonitoring" class="page-section hidden">
-        <div class="panel fade-up">
-          <div class="panel-title">
-            <h3>Dashboard Monitoring Admin</h3>
-            <p>Admin dapat melihat progres penginputan perencanaan dan pencairan dari masing-masing bidang.</p>
-          </div>
-          <div id="monitoringCards" class="monitor-grid"></div>
+    <section id="summaryCards" class="summary-grid"></section>
+
+    <section id="contentArea" class="content-area"></section>
+  </main>
+
+  <div id="editModal" class="modal-backdrop hidden">
+    <div class="modal-card fade-up">
+      <div class="modal-head">
+        <div>
+          <h3 id="editModalTitle">Edit Perencanaan</h3>
+          <p id="editModalSub">Perubahan akan diajukan kembali ke admin.</p>
         </div>
-      </section>
-
-      <section id="pageAnggaran" class="page-section">
-        <section class="summary">
-          <div class="box card-hover"><span>Pagu</span><b id="paguBidang">Rp0</b></div>
-          <div class="box card-hover"><span>Total Perencanaan</span><b id="totalInput">Rp0</b></div>
-          <div class="box card-hover"><span>Sisa Pagu</span><b id="sisaPagu">Rp0</b></div>
-          <div class="box card-hover"><span>Status Akses</span><b id="statusAkses">-</b></div>
-        </section>
-
-        <section id="adminAnggaranPanel" class="panel admin-only hidden fade-up">
-          <div class="panel-title">
-            <h3>Admin - Struktur Anggaran Bidang</h3>
-            <p>Ubah pagu dan buka/tutup akses input per bidang.</p>
-          </div>
-          <div id="bidangList"></div>
-        </section>
-
-        <section id="userAnggaranPanel" class="panel fade-up">
-          <div class="panel-title">
-            <h3>Ringkasan Bidang</h3>
-            <p>Ringkasan pagu, rencana kegiatan, dan status pencairan bidang.</p>
-          </div>
-          <div id="ringkasanBidang" class="detail-grid"></div>
-        </section>
-      </section>
-
-      <section id="pagePerencanaan" class="page-section hidden">
-        <section class="panel fade-up">
-          <div class="panel-title">
-            <h3>Input Perencanaan</h3>
-            <p>Input rencana kegiatan/kebutuhan. Admin dapat menginput untuk bidang tertentu.</p>
-          </div>
-          <div class="form-grid">
-            <div class="input-group admin-only hidden">
-              <label>Pilih Bidang</label>
-              <select id="inputBidang"></select>
-            </div>
-            <div class="input-group">
-              <label>Nama Kegiatan</label>
-              <input type="text" id="namaKegiatan" placeholder="Contoh: Rapat Koordinasi" />
-            </div>
-            <div class="input-group">
-              <label>Rincian Kebutuhan</label>
-              <input type="text" id="rincian" placeholder="Contoh: Konsumsi rapat" />
-            </div>
-            <div class="input-group">
-              <label>Keterangan</label>
-              <input type="text" id="keterangan" placeholder="Opsional" />
-            </div>
-            <div class="input-group">
-              <label>Volume</label>
-              <input type="number" id="volume" placeholder="Contoh: 100" />
-            </div>
-            <div class="input-group">
-              <label>Satuan</label>
-              <input type="text" id="satuan" placeholder="Orang / Paket / Buah" />
-            </div>
-            <div class="input-group">
-              <label>Harga Satuan</label>
-              <input type="number" id="harga" placeholder="Contoh: 50000" />
-            </div>
-          </div>
-          <button id="saveBtn" onclick="savePerencanaan('DRAFT')">Simpan Draft</button>
-          <button id="ajukanBtn" onclick="savePerencanaan('DIAJUKAN')" class="btn-secondary">Simpan & Ajukan</button>
-          <div id="saveMsg" class="msg"></div>
-        </section>
-
-        <section class="panel fade-up">
-          <div class="panel-title">
-            <h3>Data Perencanaan</h3>
-            <p>Daftar rencana kegiatan yang sudah diinput.</p>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>ID</th><th>Bidang</th><th>Nama Kegiatan</th><th>Rincian</th><th>Volume</th><th>Satuan</th><th>Harga</th><th>Jumlah</th><th>Status</th><th>Aksi</th>
-                </tr>
-              </thead>
-              <tbody id="perencanaanBody"><tr><td colspan="10" class="empty">Belum ada data</td></tr></tbody>
-            </table>
-          </div>
-        </section>
-      </section>
-
-      <section id="pagePencairan" class="page-section hidden">
-        <section class="panel fade-up">
-          <div class="panel-title">
-            <h3>Upload Dokumen Pencairan</h3>
-            <p>Upload dokumen pendukung per kegiatan, seperti berita acara, daftar hadir, dokumentasi, kwitansi, dan dokumen lainnya.</p>
-          </div>
-          <div class="form-grid">
-            <div class="input-group">
-              <label>Pilih Kegiatan</label>
-              <select id="dokKegiatan"></select>
-            </div>
-            <div class="input-group">
-              <label>Jenis Dokumen</label>
-              <select id="jenisDokumen">
-                <option>Berita Acara</option>
-                <option>Daftar Hadir</option>
-                <option>Dokumentasi</option>
-                <option>Kwitansi</option>
-                <option>Surat Tugas</option>
-                <option>Dokumen Lainnya</option>
-              </select>
-            </div>
-            <div class="input-group">
-              <label>File Dokumen</label>
-              <input type="file" id="fileDokumen" />
-            </div>
-          </div>
-          <button id="uploadBtn" onclick="uploadDokumen()">Upload Dokumen</button>
-          <div id="uploadMsg" class="msg"></div>
-        </section>
-
-        <section class="panel fade-up">
-          <div class="panel-title">
-            <h3>Data Dokumen & Pencairan</h3>
-            <p>Admin dapat memverifikasi dokumen dan memperbarui status pencairan.</p>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Bidang</th><th>Kegiatan</th><th>Jenis Dokumen</th><th>File</th><th>Status Dokumen</th><th>Status Pencairan</th><th>Catatan</th><th>Aksi Admin</th>
-                </tr>
-              </thead>
-              <tbody id="dokumenBody"><tr><td colspan="8" class="empty">Belum ada dokumen</td></tr></tbody>
-            </table>
-          </div>
-        </section>
-      </section>
-    </main>
+        <button class="btn-soft" onclick="closeEditModal()">Tutup</button>
+      </div>
+      <input type="hidden" id="editIdKegiatan" />
+      <div class="form-grid">
+        <div class="field"><label>Nama Kegiatan</label><input id="editNamaKegiatan" /></div>
+        <div class="field"><label>Rincian Kebutuhan</label><input id="editRincian" /></div>
+        <div class="field"><label>Keterangan</label><input id="editKeterangan" /></div>
+        <div class="field"><label>Volume</label><input id="editVolume" type="number" /></div>
+        <div class="field"><label>Satuan</label><input id="editSatuan" /></div>
+        <div class="field"><label>Harga Satuan</label><input id="editHarga" type="number" /></div>
+      </div>
+      <button onclick="submitEditPerencanaan()">Simpan & Ajukan</button>
+    </div>
   </div>
 
   <script src="app.js"></script>
